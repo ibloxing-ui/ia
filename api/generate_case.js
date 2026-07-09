@@ -1,30 +1,26 @@
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "user", content: "Genera un caso de detective. Responde solo con JSON." }]
-            })
-        });
-
-        const data = await response.json();
-
-        // AQUÍ ESTÁ EL TRUCO: Si no es un éxito (200), mostramos qué respondió OpenAI
-        if (!response.ok) {
-            return res.status(500).json({ error: "OpenAI dice: " + JSON.stringify(data) });
+    // Esta es tu "Biblioteca de Casos". Puedes añadir todos los que quieras aquí.
+    const bibliotecaDeCasos = [
+        {
+            "title": "El misterio de la tinta borrada",
+            "desc": "Un manuscrito antiguo aparece con páginas en blanco en una biblioteca privada.",
+            "clues": {"pista1": "Hay restos de un borrador químico en el escritorio."},
+            "suspects": {"A": "El bibliotecario envidioso", "B": "El heredero arruinado"},
+            "solution": {"culprit": "A", "proof": "pista1"}
+        },
+        {
+            "title": "El reloj de arena detenido",
+            "desc": "Un reloj de arena se rompió en una habitación cerrada sin ventanas.",
+            "clues": {"pista1": "El cristal tiene huellas de guantes de seda."},
+            "suspects": {"A": "La institutriz", "B": "El mayordomo"},
+            "solution": {"culprit": "B", "proof": "pista1"}
         }
+    ];
 
-        const casoGenerado = JSON.parse(data.choices[0].message.content);
-        res.status(200).json(casoGenerado);
+    // Elegir uno al azar
+    const casoElegido = bibliotecaDeCasos[Math.floor(Math.random() * bibliotecaDeCasos.length)];
 
-    } catch (error) {
-        res.status(500).json({ error: "Error técnico: " + error.message });
-    }
+    res.status(200).json(casoElegido);
 }
