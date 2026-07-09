@@ -1,15 +1,10 @@
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    const prompt_sistema = `Genera un caso de detective único. 
-    Devuelve estrictamente un JSON con este formato exacto: 
-    {
-      "title": "Nombre del caso",
-      "desc": "Descripción inicial",
-      "clues": {"pista1": "Descripción"},
-      "suspects": {"A": "Dialogo A", "B": "Dialogo B"},
-      "solution": {"culprit": "A", "proof": "pista1"}
-    }`;
+    // Prompt más estricto
+    const prompt_sistema = `Eres un generador de casos de detectives. 
+    Responde ÚNICAMENTE con un objeto JSON. No escribas nada más, ni explicaciones, ni saludos.
+    Formato: {"title": "...", "desc": "...", "clues": {"pista1": "..."}, "suspects": {"A": "..."}, "solution": {"culprit": "...", "proof": "..."}}`;
 
     try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -25,9 +20,16 @@ export default async function handler(req, res) {
         });
 
         const data = await response.json();
-        const casoGenerado = JSON.parse(data.choices[0].message.content);
+        
+        // Limpiamos la respuesta por si la IA añadió texto extra
+        let content = data.choices[0].message.content;
+        content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+        
+        const casoGenerado = JSON.parse(content);
         res.status(200).json(casoGenerado);
+
     } catch (error) {
-        res.status(500).json({ error: "No se pudo generar el caso" });
+        // Esto te dirá exactamente el error en el navegador
+        res.status(500).json({ error: "Error técnico: " + error.message });
     }
 }
